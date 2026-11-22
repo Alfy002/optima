@@ -33,29 +33,32 @@ input:focus,textarea:focus{outline:none;border-color:var(--az)}
 .msg{margin-top:12px;font-size:14px;font-weight:600}.ok{color:var(--ok)}.err{color:var(--err)}
 #m2{display:none}
 #qrbox{text-align:center;display:none}
-#qrbox img{width:min(100%,300px);image-rendering:pixelated;background:#fff;padding:10px;border-radius:14px;border:1px solid var(--line)}
-.sq{position:relative;width:min(100%,340px);aspect-ratio:1;margin:0 auto;border-radius:22px;overflow:hidden;background:#0b1a2a;border:3px solid var(--az)}
-.sq video{width:100%;height:100%;object-fit:cover;display:block}
+#qrbox img{width:100%;max-width:300px;image-rendering:pixelated;background:#fff;padding:10px;border-radius:14px;border:1px solid var(--line)}
+.sq{position:relative;width:100%;max-width:340px;margin:0 auto;border-radius:22px;overflow:hidden;background:#0b1a2a;border:3px solid var(--az)}
+.sq::before{content:"";display:block;padding-top:100%}
+.sq video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block}
 .sq #flip{position:absolute;top:10px;right:10px;width:38px;height:38px;border:0;border-radius:50%;background:rgba(15,42,67,.55);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .pc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 14px;text-align:center;cursor:pointer;box-shadow:0 4px 18px rgba(20,179,240,.08);transition:transform .15s}
 .pc:active{transform:scale(.97)}
+.pc,.in,.rw,#ov{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;outline:none}
 .av{width:52px;height:52px;border-radius:50%;background:var(--az2);color:var(--az);font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:18px}
 .pc b{display:block;font-size:15px;line-height:1.25}
 .badge{display:inline-block;background:var(--az2);color:var(--az);font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;margin-top:8px}
 .empty{text-align:center;color:var(--mute);padding:40px 10px;grid-column:1/-1}
-#ov{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 #ov[hidden]{display:none}
 .ovh{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
 .ovh button{border:0;background:var(--az2);color:var(--az);width:40px;height:40px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .ovh b{font-size:18px;font-weight:800}
+#x{order:2;margin-left:auto}
 .hint{font-size:12px;color:var(--mute);padding:10px 16px 0;max-width:640px;margin:auto;width:100%}
 #ovl{flex:1;overflow-y:auto;padding:10px 16px 30px;max-width:640px;margin:auto;width:100%}
 .rw{margin-bottom:10px;border-radius:16px;overflow:hidden;background:var(--az2)}
 .in{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:16px;touch-action:pan-y;user-select:none;transition:transform .2s}
 .in.s1{background:var(--y)}.in.s2{background:var(--g)}.in.s3{background:var(--r)}
 .in b{display:block;font-size:15px}.in small{color:var(--mute);font-size:13px}
-.call{background:var(--az);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:10px 16px;border-radius:12px}
+.call{background:var(--az);color:#fff;width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))}
 nav div{max-width:640px;margin:auto;display:flex;gap:6px}
 nav button{flex:1;border:0;background:none;color:var(--mute);font:600 12px Inter,system-ui,sans-serif;padding:8px 4px;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -76,9 +79,10 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stro
 <label>Contatti</label>
 <div class="row"><div class="count" id="cnt">0 contatti salvati</div><button class="plus" id="pick" aria-label="Aggiungi contatti">+</button></div>
 <div id="manualwrap" style="display:none;margin-top:14px">
-<label for="manual">Contact Picker non disponibile: un contatto per riga, “Nome, numero”</label>
+<label for="manual">Un contatto per riga: Nome, numero</label>
 <textarea id="manual" rows="3" placeholder="Mario Rossi, +39 333 1234567" style="margin-bottom:0"></textarea>
-<button class="btn s" id="usemanual">Aggiungi questi contatti</button></div>
+<button class="btn s" id="usemanual">Aggiungi questi contatti</button>
+<button class="btn s" id="impvcf">Importa file contatti (.vcf)</button><input type="file" id="vcf" accept=".vcf,.vcard,text/vcard,text/x-vcard,text/directory" multiple hidden></div>
 </div>
 <button class="btn" id="gen">Genera QR</button>
 <div id="m1" class="msg"></div>
@@ -92,11 +96,11 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stro
 <button class="btn" id="cam">Avvia fotocamera</button><div id="fallback" style="display:none"><button class="btn s" id="snap">Scatta foto del QR</button><input type="file" id="file" accept="image/*" capture="environment" hidden></div><div id="m2" class="msg"></div>
 </section>
 
-<section id="referenze"><div class="grid" id="grid"></div></section>
+<section id="referenze"><h2>Referenze</h2><div class="grid" id="grid"></div></section>
 </main>
 
 <div id="ov" hidden><div class="ovh"><button id="x" aria-label="Chiudi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b id="ovt"></b></div>
-<div class="hint">Scorri a destra: giallo, verde, normale. Scorri a sinistra: rosso, normale.</div><div id="ovl"></div></div>
+<div class="hint">Scorri per modificare lo stato</div><div id="ovl"></div></div>
 
 <nav><div>
 <button data-t="aggiungi" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Aggiungi</button>
@@ -112,7 +116,7 @@ let db={};try{db=JSON.parse(localStorage.getItem('optima')||'{}')}catch(e){}
 const save=()=>{try{localStorage.setItem('optima',JSON.stringify(db))}catch(e){}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=t=>{let d=String(t).replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.length>10&&d.startsWith('39'))d=d.slice(2);return d};
-let picked=[],open=null,stream=null,raf=0,last=0,payload=null,cur='aggiungi',camReq=0,camId=null;
+let picked=[],open=null,stream=null,raf=0,last=0,payload=null,cur='aggiungi',camReq=0,camId=(()=>{try{return localStorage.getItem('optima_cam')}catch(e){return null}})();
 const clean=n=>String(n).replace(/\s+/g,' ').trim();
 const nameKey=n=>String(n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().split(' ').filter(Boolean).sort().join(' ');
 (()=>{const o=db;db={};for(const k in o){let e=o[k];if(Array.isArray(e))e={name:k,refs:e.map(p=>({n:p[0],t:p[1],s:0}))};
@@ -134,11 +138,22 @@ function count(){const n=picked.length;$('#cnt').textContent=n+(n===1?' contatto
 function addPicked(list){list.forEach(([n,t])=>{if(!picked.some(p=>norm(p[1])===norm(t)))picked.push([n,t])});count()}
 if(!('contacts' in navigator&&'ContactsManager' in window))$('#manualwrap').style.display='block';
 $('#pick').onclick=async()=>{
- if(!('contacts' in navigator)){msg('#m1','Contact Picker non supportato: usa Chrome su Android o l’inserimento manuale.',1);$('#manualwrap').style.display='block';return}
+ if(!('contacts' in navigator)){$('#manualwrap').style.display='block';$('#manual').focus();return}
  try{const r=await navigator.contacts.select(['name','tel'],{multiple:true});
   addPicked(r.filter(c=>c.tel&&c.tel[0]).map(c=>[(c.name&&c.name[0]||'Senza nome').trim(),c.tel[0].replace(/\s+/g,'')]));msg('#m1','')
- }catch(e){msg('#m1','Selezione non riuscita o annullata.',1)}};
-$('#usemanual').onclick=()=>{addPicked($('#manual').value.split('\n').map(l=>l.split(',').map(x=>x.trim())).filter(a=>a[0]&&a[1]).map(a=>[a[0],a[1].replace(/\s+/g,'')]));$('#manual').value=''};
+ }catch(e){$('#manualwrap').style.display='block';msg('#m1','')}};
+$('#usemanual').onclick=()=>{addPicked($('#manual').value.split('\n').map(l=>l.trim()).map(l=>l.match(/^(.+?)\s*[,;\t]\s*(.+)$/)||l.match(/^(.+?)\s+(\+?\d[\d\s().-]{5,})$/)).filter(Boolean).map(m=>[m[1].trim(),m[2].replace(/\s+/g,'')]));$('#manual').value=''};
+function parseVcf(t){t=t.replace(/\r?\n[ \t]/g,'');const out=[];
+ t.split(/BEGIN:VCARD/i).slice(1).forEach(b=>{
+  let n=(b.match(/^(?:[\w-]+\.)?FN(?:;[^:\n]*)?:(.*)$/im)||[])[1];
+  if(!n){const m=(b.match(/^(?:[\w-]+\.)?N(?:;[^:\n]*)?:(.*)$/im)||[])[1];if(m){const a=m.split(';');n=((a[1]||'')+' '+(a[0]||'')).trim()}}
+  const re=/^(?:[\w-]+\.)?TEL(?:;[^:\n]*)?:(.*)$/gim,tel=[];let m;while((m=re.exec(b)))tel.push(m[1].trim());
+  if(tel[0])out.push([(n||'Senza nome').trim(),tel[0].replace(/^tel:/i,'').replace(/\s+/g,'')])});
+ return out}
+$('#impvcf').onclick=()=>$('#vcf').click();
+$('#vcf').onchange=async e=>{const fs=Array.from(e.target.files);e.target.value='';let all=[];
+ for(const f of fs){const t=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result));fr.onerror=()=>r('');fr.readAsText(f)});all=all.concat(parseVcf(t))}
+ addPicked(all);msg('#m1','')};
 function fields(){const n=clean($('#nm').value);
  if(nameKey(n).split(' ').length<2){msg('#m1','Inserisci nome e cognome.',1);return null}
  return{n}}
@@ -146,9 +161,9 @@ $('#gen').onclick=()=>{const f=fields();if(!f)return;if(!picked.length){msg('#m1
  payload={o:1,n:f.n,r:picked};
  try{qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
   const q=qrcode(0,'L');q.addData(JSON.stringify(payload));q.make();
-  $('#qrimg').src=q.createDataURL(6,4);$('#qrbox').style.display='block';$('#qrbox').scrollIntoView({behavior:'smooth'});msg('#m1','QR generato.')
+  $('#qrimg').src=q.createDataURL(6,4);$('#qrbox').style.display='block';$('#qrbox').scrollIntoView({behavior:'smooth'});msg('#m1','')
  }catch(e){msg('#m1','Troppi dati per un solo QR: usa meno contatti.',1)}};
-$('#saveme').onclick=()=>{if(payload){merge(payload);msg('#m1','Salvato nelle Referenze.')}};
+$('#saveme').onclick=()=>{if(payload){merge(payload);msg('#m1','')}};
 
 function merge(p){const k=nameKey(p.n),e=db[k]=db[k]||{name:clean(p.n),refs:[]};let n=0;
  p.r.forEach(([nm,t])=>{if(!e.refs.some(x=>norm(x.t)===norm(t))){e.refs.push({n:nm,t:t,s:0});n++}});save();return n}
@@ -158,9 +173,12 @@ function stopCam(){camReq++;cancelAnimationFrame(raf);if(stream){stream.getTrack
 $('#cam').onclick=()=>stream?stopCam():startCam();
 async function startCam(){if(stream)return;const id=++camReq;msg('#m2','');
  try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw{name:'NoApi'};
-  let s;try{s=await navigator.mediaDevices.getUserMedia({video:camId?{deviceId:{exact:camId}}:{facingMode:{ideal:'environment'}}})}catch(e){if(e.name==='NotAllowedError'||e.name==='SecurityError')throw e;s=await navigator.mediaDevices.getUserMedia({video:true})}
+  let s;const get=v=>navigator.mediaDevices.getUserMedia({video:v});
+  try{s=await get(camId?{deviceId:{exact:camId}}:{facingMode:{ideal:'environment'}})}
+  catch(e){if(e.name==='NotAllowedError'||e.name==='SecurityError')throw e;camId=null;try{s=await get({facingMode:{ideal:'environment'}})}catch(e2){s=await get(true)}}
   if(id!==camReq||cur!=='camera'){s.getTracks().forEach(t=>t.stop());return}
   stream=s;const v=$('#vid');v.srcObject=s;await v.play();
+  try{const di=s.getVideoTracks()[0].getSettings().deviceId;if(di){camId=di;localStorage.setItem('optima_cam',di)}}catch(e){}
   if(id!==camReq)return;
   $('#cam').textContent='Ferma fotocamera';$('#fallback').style.display='none';msg('#m2','Inquadra il QR nel riquadro…');tick()}
  catch(e){if(id!==camReq)return;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}camErr(e)}}
@@ -180,7 +198,7 @@ const ini=n=>n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
 function render(){const ks=Object.keys(db);
  $('#grid').innerHTML=ks.length?ks.map(k=>`<div class="pc" data-k="${esc(k)}"><div class="av">${esc(ini(db[k].name))}</div><b>${esc(db[k].name)}</b><span class="badge">${db[k].refs.length} referenze</span></div>`).join(''):'<div class="empty">Nessun referente ancora. Aggiungi o scansiona un QR per iniziare.</div>';
  $('#grid').querySelectorAll('.pc').forEach(c=>c.onclick=()=>{open=c.dataset.k;$('#ovt').textContent=db[open].name;$('#ov').hidden=false;showDetail()})}
-function showDetail(){$('#ovl').innerHTML=db[open].refs.map((p,i)=>`<div class="rw" data-i="${i}"><div class="in s${p.s||0}"><div><b>${esc(p.n)}</b><small>${esc(p.t)}</small></div><a class="call" href="tel:${esc(p.t)}">Chiama</a></div></div>`).join('')}
+function showDetail(){$('#ovl').innerHTML=db[open].refs.map((p,i)=>`<div class="rw" data-i="${i}"><div class="in s${p.s||0}"><div><b>${esc(p.n)}</b><small>${esc(p.t)}</small></div><a class="call" href="tel:${esc(p.t)}" aria-label="Chiama"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></a></div></div>`).join('')}
 $('#x').onclick=()=>{$('#ov').hidden=true;open=null;render()};
 
 /* swipe sui numeri */
