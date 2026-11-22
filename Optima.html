@@ -86,7 +86,7 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stro
 </div>
 <button class="btn" id="gen">Genera QR</button>
 <div id="m1" class="msg"></div>
-<div class="card" id="qrbox" style="margin-top:14px"><img id="qrimg" alt="QR contatti"><p style="color:var(--mute);margin:10px 0 0;font-size:14px">Fai leggere questo QR dalla sezione Camera.</p>
+<div class="card" id="qrbox" style="margin-top:14px"><div id="qrs"></div><p id="qrnote" style="color:var(--mute);margin:10px 0 0;font-size:14px"></p>
 <button class="btn s" id="saveme">Salva anche nelle mie Referenze</button></div>
 </section>
 
@@ -160,9 +160,15 @@ function fields(){const n=clean($('#nm').value);
 $('#gen').onclick=()=>{const f=fields();if(!f)return;if(!picked.length){msg('#m1','Aggiungi almeno un contatto con il bottone +.',1);return}
  payload={o:1,n:f.n,r:picked};
  try{qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
-  const q=qrcode(0,'L');q.addData(JSON.stringify(payload));q.make();
-  $('#qrimg').src=q.createDataURL(6,4);$('#qrbox').style.display='block';$('#qrbox').scrollIntoView({behavior:'smooth'});msg('#m1','')
- }catch(e){msg('#m1','Troppi dati per un solo QR: usa meno contatti.',1)}};
+  const mk=r=>{try{const q=qrcode(0,'L');q.addData(JSON.stringify({o:1,n:f.n,r:r}));q.make();return q}catch(e){return null}};
+  const parts=[];let cur=[],qc=null;
+  for(const c of picked){const t=mk(cur.concat([c]));
+   if(t){cur.push(c);qc=t}else{if(cur.length)parts.push(qc);cur=[c];qc=mk(cur);if(!qc)throw 0}}
+  if(cur.length)parts.push(qc);
+  $('#qrs').innerHTML=parts.map((q,i)=>(parts.length>1?`<p style="margin:${i?'18px':'0'} 0 8px;font-weight:700">QR ${i+1} di ${parts.length}</p>`:'')+`<img alt="QR contatti" src="${q.createDataURL(6,4)}">`).join('');
+  $('#qrnote').textContent=parts.length>1?'Fai leggere tutti i QR dalla sezione Camera.':'Fai leggere questo QR dalla sezione Camera.';
+  $('#qrbox').style.display='block';$('#qrbox').scrollIntoView({behavior:'smooth'});msg('#m1','')
+ }catch(e){msg('#m1','Nome troppo lungo per il QR.',1)}};
 $('#saveme').onclick=()=>{if(payload){merge(payload);msg('#m1','')}};
 
 function merge(p){const k=nameKey(p.n),e=db[k]=db[k]||{name:clean(p.n),refs:[]};let n=0;
