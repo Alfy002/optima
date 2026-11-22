@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Optima</title>
+<style>
+:root{--bg:#f4f9ff;--card:#fff;--ink:#0f2a43;--mute:#5b7691;--az:#2b9bf0;--az2:#e3f2ff;--line:#d6e8f9;--ok:#1a9e6b;--err:#d64545;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1a2a;--card:#12263b;--ink:#e8f3ff;--mute:#8fadc8;--az2:#173a58;--line:#1f4263}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+.bar{max-width:760px;margin:auto;display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;color:var(--az);letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#6cc0ff,var(--az));display:inline-block}
+nav{display:flex;gap:4px;margin-left:auto;background:var(--az2);padding:4px;border-radius:14px}
+nav button{border:0;background:none;color:var(--mute);font:600 14px inherit;font-family:inherit;padding:8px 14px;border-radius:10px;cursor:pointer}
+nav button.on{background:var(--card);color:var(--az);box-shadow:0 1px 4px rgba(43,155,240,.25)}
+main{max-width:760px;margin:auto;padding:20px 16px 60px}
+section{display:none}section.on{display:block}
+h2{margin:4px 0 4px;font-size:24px;letter-spacing:-.4px}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 18px rgba(43,155,240,.08);margin-bottom:14px}
+label{font-size:13px;font-weight:600;color:var(--mute);display:block;margin-bottom:6px}
+input,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;background:var(--bg);color:var(--ink);text-transform:none}
+input#cf{text-transform:uppercase;letter-spacing:1px}
+input:focus,textarea:focus{outline:none;border-color:var(--az)}
+.btn{border:0;background:var(--az);color:#fff;font:600 15px inherit;font-family:inherit;padding:12px 18px;border-radius:12px;cursor:pointer;margin-top:12px}
+.btn.s{background:var(--az2);color:var(--az)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;background:var(--az2);border-radius:12px;margin-top:8px;font-size:14px}
+.chip span:last-child{color:var(--mute)}
+#qrbox{text-align:center}
+#qrbox img{width:min(100%,320px);image-rendering:pixelated;background:#fff;padding:10px;border-radius:14px;border:1px solid var(--line)}
+video{width:100%;border-radius:16px;background:#0b1a2a;aspect-ratio:4/3;object-fit:cover}
+.msg{margin-top:12px;font-size:14px;font-weight:600}.ok{color:var(--ok)}.err{color:var(--err)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.cf{cursor:pointer;margin:0;transition:transform .15s,border-color .15s}
+.cf:hover,.cf.on{border-color:var(--az);transform:translateY(-2px)}
+.cf b{display:block;letter-spacing:1px;font-size:15px;word-break:break-all}
+.cf small{color:var(--mute)}
+.badge{display:inline-block;background:var(--az2);color:var(--az);font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;margin-top:8px}
+.empty{text-align:center;color:var(--mute);padding:30px 10px}
+.del{border:0;background:none;color:var(--err);cursor:pointer;font:600 13px inherit;font-family:inherit;margin-top:10px}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="logo"><i></i>Optima</div>
+<nav><button data-t="contatti" class="on">Contatti</button><button data-t="scanner">Scanner</button><button data-t="referenze">Referenze</button></nav></div></header>
+<main>
+<section id="contatti" class="on">
+<h2>Seleziona contatti</h2><p class="sub">Inserisci il codice fiscale del referente, scegli i contatti e genera il QR.</p>
+<div class="card">
+<label for="cf">Codice fiscale del referente</label>
+<input id="cf" maxlength="16" placeholder="RSSMRA80A01H501U" autocomplete="off">
+<button class="btn" id="pick">Scegli contatti</button>
+<div id="manualwrap" style="display:none;margin-top:14px">
+<label for="manual">Il Contact Picker non è disponibile qui: inserisci un contatto per riga come "Nome, numero"</label>
+<textarea id="manual" rows="4" placeholder="Mario Rossi, +39 333 1234567"></textarea>
+<button class="btn s" id="usemanual">Usa questi contatti</button></div>
+<div id="list"></div>
+<button class="btn" id="gen" style="display:none">Genera QR</button>
+<div id="m1" class="msg"></div>
+</div>
+<div class="card" id="qrbox" style="display:none"><img id="qrimg" alt="QR contatti"><p class="sub" style="margin:10px 0 0">Fai leggere questo QR dalla sezione Scanner.</p>
+<button class="btn s" id="saveme">Salva anche nelle mie Referenze</button></div>
+</section>
+
+<section id="scanner">
+<h2>Scanner QR</h2><p class="sub">Inquadra un QR Optima per aggiungere referente e referenze.</p>
+<div class="card"><video id="vid" playsinline muted></video><canvas id="cv" hidden></canvas>
+<div class="row"><button class="btn" id="cam">Avvia fotocamera</button></div><div id="m2" class="msg"></div></div>
+</section>
+
+<section id="referenze">
+<h2>Referenze</h2><p class="sub">Tocca una card per vedere le referenze di quel codice fiscale.</p>
+<div class="grid" id="grid"></div><div id="detail"></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+let db={};try{db=JSON.parse(localStorage.getItem('optima')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('optima',JSON.stringify(db))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let picked=[],open=null,stream=null,raf=0,last=0,payload=null;
+
+/* navbar */
+function go(t){if(!document.getElementById(t))t='contatti';
+ document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ if(t!=='scanner')stopCam();if(t==='referenze')render();}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.t});
+addEventListener('hashchange',()=>go(location.hash.slice(1)));
+go(location.hash.slice(1));
+
+/* contatti */
+const cfOk=()=>{const v=$('#cf').value.trim().toUpperCase();$('#cf').value=v;
+ if(!/^[A-Z0-9]{16}$/.test(v)){msg('#m1','Il codice fiscale deve avere 16 caratteri.',1);return null}return v};
+function msg(id,t,e){const m=$(id);m.textContent=t;m.className='msg '+(e?'err':'ok')}
+function showList(){$('#list').innerHTML=picked.map(p=>`<div class="chip"><span>${esc(p[0])}</span><span>${esc(p[1])}</span></div>`).join('');
+ $('#gen').style.display=picked.length?'inline-block':'none'}
+if(!('contacts' in navigator&&'ContactsManager' in window))$('#manualwrap').style.display='block';
+$('#pick').onclick=async()=>{
+ if(!cfOk())return;
+ if(!('contacts' in navigator)){msg('#m1','Contact Picker non supportato: usa Chrome su Android, oppure l\'inserimento manuale.',1);$('#manualwrap').style.display='block';return}
+ try{const r=await navigator.contacts.select(['name','tel'],{multiple:true});
+  picked=r.filter(c=>c.tel&&c.tel[0]).map(c=>[(c.name&&c.name[0]||'Senza nome').trim(),c.tel[0].replace(/\s+/g,'')]);
+  showList();msg('#m1',picked.length+' contatti selezionati.');
+ }catch(e){msg('#m1','Selezione non riuscita o annullata ('+(e.name||'errore')+').',1)}};
+$('#usemanual').onclick=()=>{picked=$('#manual').value.split('\n').map(l=>l.split(',').map(x=>x.trim())).filter(a=>a[0]&&a[1]).map(a=>[a[0],a[1].replace(/\s+/g,'')]);showList();msg('#m1',picked.length+' contatti pronti.')};
+$('#gen').onclick=()=>{const cf=cfOk();if(!cf||!picked.length)return;
+ payload={o:1,c:cf,r:picked};
+ try{qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+  const q=qrcode(0,'L');q.addData(JSON.stringify(payload));q.make();
+  $('#qrimg').src=q.createDataURL(6,4);$('#qrbox').style.display='block';
+  $('#qrbox').scrollIntoView({behavior:'smooth'});msg('#m1','QR generato.');
+ }catch(e){msg('#m1','Troppi dati per un solo QR: seleziona meno contatti.',1)}};
+$('#saveme').onclick=()=>{if(payload){merge(payload);msg('#m1','Salvato nelle Referenze.')}};
+
+function merge(p){const e=db[p.c]=db[p.c]||[];let n=0;
+ p.r.forEach(([nm,t])=>{if(!e.some(x=>x[1]===t)){e.push([nm,t]);n++}});save();return n}
+
+/* scanner */
+function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#vid').srcObject=null;$('#cam').textContent='Avvia fotocamera'}
+$('#cam').onclick=async()=>{
+ if(stream){stopCam();return}
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  const v=$('#vid');v.srcObject=stream;await v.play();$('#cam').textContent='Ferma fotocamera';msg('#m2','Inquadra il QR…');tick()}
+ catch(e){msg('#m2','Impossibile accedere alla fotocamera: controlla i permessi.',1)}};
+function tick(){const v=$('#vid'),c=$('#cv');
+ if(v.readyState===4){c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext('2d',{willReadFrequently:true});
+  x.drawImage(v,0,0);const img=x.getImageData(0,0,c.width,c.height);
+  const r=jsQR(img.data,c.width,c.height);
+  if(r&&Date.now()-last>2500){last=Date.now();
+   try{const p=JSON.parse(r.data);if(p.o!==1||!p.c||!Array.isArray(p.r))throw 0;
+    const n=merge(p);msg('#m2',`Referente ${p.c}: ${n} nuove referenze aggiunte (${p.r.length} nel QR).`);stopCam();return}
+   catch(e){msg('#m2','QR letto ma non è un QR Optima.',1)}}}
+ raf=requestAnimationFrame(tick)}
+
+/* referenze */
+function render(){const ks=Object.keys(db);
+ $('#grid').innerHTML=ks.length?ks.map(k=>`<div class="card cf ${k===open?'on':''}" data-k="${esc(k)}"><small>Codice fiscale</small><b>${esc(k)}</b><span class="badge">${db[k].length} referenze</span></div>`).join(''):'<div class="empty" style="grid-column:1/-1">Nessun referente ancora. Genera o scansiona un QR per iniziare.</div>';
+ $('#grid').querySelectorAll('.cf').forEach(c=>c.onclick=()=>{open=open===c.dataset.k?null:c.dataset.k;render()});
+ $('#detail').innerHTML=open&&db[open]?`<div class="card" style="margin-top:14px"><b style="letter-spacing:1px">${esc(open)}</b>${db[open].map(p=>`<div class="chip"><span>${esc(p[0])}</span><a href="tel:${esc(p[1])}" style="color:var(--az);text-decoration:none">${esc(p[1])}</a></div>`).join('')}<button class="del" id="del">Elimina questo referente</button></div>`:'';
+ const d=$('#del');if(d)d.onclick=()=>{delete db[open];open=null;save();render()}}
+</script>
+</body>
+</html>
