@@ -8,7 +8,7 @@
 <style>
 :root{--bg:#f4f9ff;--card:#fff;--ink:#0f2a43;--mute:#5b7691;--az:#14b3f0;--az2:#e3f4fe;--dk:#cfe0f0;--line:#d6e8f9;--y:#fff0a8;--g:#c6f0d6;--r:#ffd0d0;--err:#d64545;--ok:#1a9e6b;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b1a2a;--card:#12263b;--ink:#e8f3ff;--mute:#8fadc8;--az2:#173a58;--dk:#0a2238;--line:#1f4263;--y:#5a4d12;--g:#165235;--r:#5a2323}}
+:root{color-scheme:light}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -82,7 +82,7 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stro
 <section id="camera">
 <h2>Camera</h2>
 <div class="card"><div class="sq"><video id="vid" playsinline muted></video></div><canvas id="cv" hidden></canvas>
-<button class="btn" id="cam">Avvia fotocamera</button><div id="m2" class="msg"></div></div>
+<button class="btn" id="cam">Avvia fotocamera</button><div id="fallback" style="display:none"><button class="btn s" id="snap">Scatta foto del QR</button><input type="file" id="file" accept="image/*" capture="environment" hidden></div><div id="m2" class="msg"></div></div>
 </section>
 
 <section id="referenze"><div class="grid" id="grid"></div></section>
@@ -150,12 +150,13 @@ function merge(p){const k=nameKey(p.n),e=db[k]=db[k]||{name:clean(p.n),refs:[]};
 function stopCam(){camReq++;cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#vid').srcObject=null;$('#cam').textContent='Avvia fotocamera'}
 $('#cam').onclick=()=>stream?stopCam():startCam();
 async function startCam(){if(stream)return;const id=++camReq;msg('#m2','');
- try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+ try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw{name:'NoApi'};
+  let s;try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}})}catch(e){if(e.name==='NotAllowedError'||e.name==='SecurityError')throw e;s=await navigator.mediaDevices.getUserMedia({video:true})}
   if(id!==camReq||cur!=='camera'){s.getTracks().forEach(t=>t.stop());return}
   stream=s;const v=$('#vid');v.srcObject=s;await v.play();
   if(id!==camReq)return;
-  $('#cam').textContent='Ferma fotocamera';msg('#m2','Inquadra il QR nel riquadro…');tick()}
- catch(e){if(id===camReq)msg('#m2','Impossibile accedere alla fotocamera: controlla i permessi.',1)}}
+  $('#cam').textContent='Ferma fotocamera';$('#fallback').style.display='none';msg('#m2','Inquadra il QR nel riquadro…');tick()}
+ catch(e){if(id!==camReq)return;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}camErr(e)}}
 function tick(){const v=$('#vid'),c=$('#cv');
  if(v.readyState===4&&v.videoWidth){const w=v.videoWidth,h=v.videoHeight,s=Math.min(w,h);
   c.width=c.height=Math.min(s,640);const x=c.getContext('2d',{willReadFrequently:true});
@@ -182,6 +183,25 @@ addEventListener('pointermove',e=>{if(!drag)return;dx=e.clientX-sx;drag.style.tr
 function end(){if(!drag)return;const r=drag,i=+r.parentNode.dataset.i;drag=null;r.style.transition='';r.style.transform='';
  if(Math.abs(dx)>60){const p=db[open].refs[i],s=p.s||0;p.s=dx>0?(s===1?2:(s===2||s===3)?0:1):(s===3?0:3);save();showDetail()}}
 addEventListener('pointerup',end);addEventListener('pointercancel',end);
+
+/* errori camera e foto di riserva */
+function camErr(e){const n=e&&e.name||'';let t;
+ if(n==='NotAllowedError'||n==='SecurityError')t='Accesso alla fotocamera negato o bloccato. Consentilo nelle impostazioni del browser oppure scatta una foto del QR.';
+ else if(n==='NotFoundError'||n==='OverconstrainedError')t='Nessuna fotocamera trovata. Puoi scattare una foto del QR.';
+ else if(n==='NotReadableError')t='La fotocamera è in uso da un’altra app. Chiudila e riprova, oppure scatta una foto del QR.';
+ else if(n==='NoApi')t='Fotocamera non disponibile in questa pagina. Puoi scattare una foto del QR.';
+ else t='Errore fotocamera ('+(n||'sconosciuto')+(e&&e.message?': '+e.message:'')+'). Puoi scattare una foto del QR.';
+ msg('#m2',t,1);$('#fallback').style.display='block';$('#cam').textContent='Riprova fotocamera'}
+function readQR(d){try{const p=JSON.parse(d);if(p.o!==1||typeof p.n!=='string'||!Array.isArray(p.r))throw 0;const n=merge(p);
+ msg('#m2',n?`${clean(p.n)}: ${n} nuove referenze aggiunte.`:`${clean(p.n)}: nessuna nuova referenza, erano già tutte salvate.`);return true}
+ catch(e){msg('#m2','QR letto ma non è un QR Optima.',1);return false}}
+$('#snap').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const im=new Image();
+ im.onload=()=>{const c=$('#cv'),m=Math.min(1,1400/Math.max(im.width,im.height));c.width=im.width*m;c.height=im.height*m;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);
+  const r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height);
+  if(r)readQR(r.data);else msg('#m2','Nessun QR trovato nella foto: riprova da più vicino.',1)};
+ im.onerror=()=>msg('#m2','Immagine non leggibile.',1);im.src=URL.createObjectURL(f)};
 </script>
 </body>
 </html>
